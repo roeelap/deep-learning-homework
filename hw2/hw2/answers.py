@@ -42,9 +42,8 @@ def part2_overfit_hp():
     wstd, lr, reg = 0, 0, 0
     # TODO: Tweak the hyperparameters until you overfit the small dataset.
     # ====== YOUR CODE: ======
-    wstd = 6
-    lr = 0.04
-    reg=0.015
+    wstd = 5
+    lr = 0.05
     # ========================
     return dict(wstd=wstd, lr=lr, reg=reg)
 
@@ -85,7 +84,7 @@ def part2_dropout_hp():
     # dropout.
     # ====== YOUR CODE: ======
     wstd = 0.1
-    lr = 0.0025
+    lr = 0.0024
     # ========================
     return dict(wstd=wstd, lr=lr)
 
@@ -198,55 +197,56 @@ def part3_optim_hp():
 
 part3_q1 = r"""
 **Your answer:**
+1. The model does not have high optimization error as the loss curve for the training set does not show significant 
+ fluctuations during training, and it is decreasing over time. In addition, the accuracy curve fot the training set
+ does reach a high value.
 
+2. The model does not have a high generalization error as there is no significant gap between the training and
+ validation loss and accuracy curves.
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
-
+3. The model has a small approximation error as the model is not able to approximate the underlying pattern
+ in the data in a perfect manner. This is evident by observing the decision boundary plot.
 """
 
 part3_q2 = r"""
 **Your answer:**
-
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
-
+As we have full knowledge on the data generation process, we can expect the FPR and FNR of the validation set to be
+pretty similar to the training set. This is because the validation set has the exact same distribution as the training set.
 """
 
 part3_q3 = r"""
 **Your answer:**
-
-
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
-
+1. In this case, we would like to minimize the false positive rate - meaning lowering the threshold. 
+ We would like to minimize the number of healthy people that are classified as sick in order to save money and time on
+ unnecessary tests. If a sick person is classified as healthy, we don't need to worry as much, as the disease would probably not kill them.
+ 
+2. In this case, we would like to minimize the false negative rate - meaning raising the threshold. 
+ We would like to minimize the number of sick people that are classified as healthy in order to save lives. 
+ If a healthy person is classified as sick, we can always run more tests to make sure they are healthy, but if a sick 
+ person is classified as healthy, they might not get the treatment they need, and die.
 """
 
 
 part3_q4 = r"""
-**Your answer:**
+1. With fixed depth, varying the width affected the complexity of the decision boundaries. Narrower widths led
+ to simpler decision boundaries, while wider widths captured more intricate patterns. As we can see in the plots,
+ when the width was 8, the model was at its best accuracy for the test set. When the width was 32, the model 
+ overfit a little bit.
 
+2. With fixed width, varying the depth influenced the model's ability to represent hierarchical features 
+ and complex relationships. As seen in the plots, the deeper the model, the more complex the decision boundaries, 
+ and the better the model's performance.
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
-
+3. As  we can see, the model with width 8 and depth 4 achieved better results for the validation set, but the model
+ with width 32 and depth 1 achieved better results for the test set. 
+ This is because the model with width 8 and depth 4 is more complex and can capture more intricate patterns, but it
+ is also more prone to overfitting. The model with width 32 and depth 1 is simpler and less prone to overfitting.
+ The differences though are not very significant.
+ 
+4. Adjusting the threshold affects the model's sensitivity and specificity, influencing the trade-off between false 
+ positives and false negatives. Optimal threshold selection based on the validation set aims to balance these factors.
+ Improvements in validation set performance due to threshold selection did not always translated directly to test 
+ set performance. Overfitting to the validation set is possible if the threshold is fine-tuned excessively. 
 """
 # ==============
 # Part 4 (CNN) answers
@@ -265,7 +265,7 @@ def part4_optim_hp():
     #    Loss classes in torch.nn or one of the loss functions from torch.nn.functional.
     # ====== YOUR CODE: ======
     loss_fn = torch.nn.CrossEntropyLoss()
-    lr = 0.001
+    lr = 0.02
     weight_decay = 0.01
     momentum = 0.5
     # ========================

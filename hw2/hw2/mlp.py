@@ -56,18 +56,22 @@ class MLP(nn.Module):
         #    instances.
         # ====== YOUR CODE: ======
         super(MLP, self).__init__()
-        self.layers = nn.ModuleList()
-        prev_dim = in_dim
+        layers = []
+        current_dim = in_dim
+
         for dim, nonlin in zip(dims, nonlins):
-            self.layers.append(nn.Linear(prev_dim, dim))
-            prev_dim = dim
+            layers.append(nn.Linear(current_dim, dim))
             if isinstance(nonlin, str):
-                nonlin_cls = ACTIVATIONS[nonlin]
-                nonlin_kwargs = ACTIVATION_DEFAULT_KWARGS[nonlin]
-                nonlin_instance = nonlin_cls(**nonlin_kwargs)
-                self.layers.append(nonlin_instance)
+                activation_cls = ACTIVATIONS[nonlin]
+                activation_kwargs = ACTIVATION_DEFAULT_KWARGS[nonlin]
+                layers.append(activation_cls(**activation_kwargs))
+            elif isinstance(nonlin, nn.Module):
+                layers.append(nonlin)
             else:
-                self.layers.append(nonlin)
+                raise ValueError("Non-linearity should be either a string or an instance of nn.Module")
+            current_dim = dim
+
+        self.model = nn.Sequential(*layers)
         # ========================
 
     def forward(self, x: Tensor) -> Tensor:
@@ -78,7 +82,5 @@ class MLP(nn.Module):
         # TODO: Implement the model's forward pass. Make sure the input and output
         #  shapes are as expected.
         # ====== YOUR CODE: ======
-        for layer in self.layers:
-            x = layer(x)
-        return x
+        return self.model(x)
         # ========================

@@ -45,17 +45,40 @@ def mlp_experiment(
     #  Note: use print_every=0, verbose=False, plot=False where relevant to prevent
     #  output from this function.
     # ====== YOUR CODE: ======
-    mlp = MLP(width, [width] * depth, nonlins=['ReLU', 'Softmax'])
-    model = BinaryClassifier(mlp)
-    trainer = ClassifierTrainer(model, loss_fn=torch.nn.CrossEntropyLoss(), optimizer=torch.optim.Adam(mlp.parameters()))
-    fit_res = trainer.fit(dl_train, dl_valid, n_epochs, print_every=0, verbose=False, plot=False)
-    valid_acc = fit_res[-1]
+    model = BinaryClassifier(
+        model=MLP(
+            in_dim=2,
+            dims=[width] * depth + [2],
+            nonlins=['relu'] * depth + ['none']
+        ),
+        threshold=0.5
+    )
 
-    thresh = select_roc_thresh(model, *dl_valid.dataset.tensors, plot=False)
-    model.threshold = thresh
-    test_res = model.classify(dl_test.dataset.tensors)
+    loss_fn = torch.nn.CrossEntropyLoss()
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+
+    trainer = ClassifierTrainer(model, loss_fn, optimizer)
+    fit_result = trainer.fit(dl_train, dl_valid, num_epochs=n_epochs, print_every=3, **{})
+
+    thresholds = torch.linspace(0.0, 1.0, steps=21)
+    best_thresh = 0.5
+    best_acc = 0.0
+
+    for thresh in thresholds:
+        model.threshold = thresh.item()
+        val_result = trainer.test_epoch(dl_valid)
+        if val_result.accuracy > best_acc:
+            best_acc = val_result.accuracy
+            best_thresh = thresh.item()
+
+    model.threshold = best_thresh
+
+    test_result = trainer.test_epoch(dl_test)
+
+    valid_acc = fit_result.test_acc[-1]
+    test_acc = test_result.accuracy
     # ========================
-    return model, thresh, valid_acc, test_acc
+    return model, best_thresh, valid_acc, test_acc
 
 
 def cnn_experiment(

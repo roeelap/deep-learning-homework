@@ -84,19 +84,18 @@ class CNN(nn.Module):
         i = 0
 
         while i < len(self.channels):
-            c = min(self.pool_every, len(self.channels) - i)
+            count = min(self.pool_every, len(self.channels) - i)
 
-            for j in range(c):
+            for j in range(count):
                 layers += [
-                    nn.Conv2d(
-                        in_channels=cur_in_channels,
-                        out_channels=self.channels[i],
-                        **self.conv_params),
+                    nn.Conv2d(in_channels=cur_in_channels,
+                              out_channels=self.channels[i],
+                              **self.conv_params),
                     ACTIVATIONS[self.activation_type](**self.activation_params)]
                 cur_in_channels = self.channels[i]
                 i += 1
 
-            if c == self.pool_every:
+            if count == self.pool_every:
                 layers += [POOLINGS[self.pooling_type](**self.pooling_params)]
         # ========================
         seq = nn.Sequential(*layers)
@@ -127,10 +126,9 @@ class CNN(nn.Module):
         #  - The last Linear layer should have an output dim of out_classes.
         mlp: MLP = None
         # ====== YOUR CODE: ======
-        in_dim = self._n_features()
-        dims = [dim for dim in self.hidden_dims] + [self.out_classes]
-        nonlins = [self.activation_type] * len(self.hidden_dims) + ['softmax']
-        mlp = MLP(in_dim, dims, nonlins)
+        mlp = MLP(in_dim=self._n_features(),
+                  dims=self.hidden_dims + [self.out_classes],
+                  nonlins=[self.activation_type] * len(self.hidden_dims) + [ACTIVATIONS[None]()])
         # ========================
         return mlp
 
@@ -140,7 +138,9 @@ class CNN(nn.Module):
         #  return class scores.
         out: Tensor = None
         # ====== YOUR CODE: ======
-        out = self.mlp(self.feature_extractor(x).reshape(x.shape[0], -1))
+        x = self.feature_extractor(x)
+        x = torch.flatten(x, 1)
+        out = self.mlp(x)
         # ========================
         return out
 

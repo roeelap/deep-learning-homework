@@ -58,7 +58,7 @@ class Classifier(nn.Module, ABC):
         """
         # TODO: Calculate class probabilities for the input.
         # ====== YOUR CODE: ======
-        return torch.softmax(z, dim=1)
+        return nn.Softmax(dim=1)(z)
         # ========================
 
     def classify(self, x: Tensor) -> Tensor:
@@ -95,8 +95,7 @@ class ArgMaxClassifier(Classifier):
         #  Classify each sample to one of C classes based on the highest score.
         #  Output should be a (N,) integer tensor.
         # ====== YOUR CODE: ======
-        _, argmax_indices = torch.max(y_proba, dim=1)
-        return argmax_indices
+        return torch.argmax(y_proba, dim=1)
         # ========================
 
 
@@ -128,8 +127,7 @@ class BinaryClassifier(Classifier):
         #  greater or equal to the threshold.
         #  Output should be a (N,) integer tensor.
         # ====== YOUR CODE: ======
-        y_pred = (y_proba[:, self.positive_class] >= self.threshold).int()
-        return y_pred
+        return (y_proba[:, self.positive_class] >= self.threshold).int()
         # ========================
 
 
