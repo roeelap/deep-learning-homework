@@ -126,9 +126,10 @@ class CNN(nn.Module):
         #  - The last Linear layer should have an output dim of out_classes.
         mlp: MLP = None
         # ====== YOUR CODE: ======
+        activation_func = ACTIVATIONS[self.activation_type](**self.activation_params)
         mlp = MLP(in_dim=self._n_features(),
                   dims=self.hidden_dims + [self.out_classes],
-                  nonlins=[self.activation_type] * len(self.hidden_dims) + [ACTIVATIONS[None]()])
+                  nonlins=[activation_func] * len(self.hidden_dims) + [ACTIVATIONS[None]()])
         # ========================
         return mlp
 
@@ -338,13 +339,30 @@ class ResNet(CNN):
         i = 0
         while i < len(self.channels):
             c = min(self.pool_every, len(self.channels) - i)
-            layers += [ResidualBlock(in_channels=cur_in_channels,
-                                     channels=self.channels[i:i + self.pool_every],
-                                     kernel_sizes=[3] * c,
-                                     batchnorm=self.batchnorm,
-                                     dropout=self.dropout,
-                                     activation_type=self.activation_type,
-                                     activation_params=self.activation_params)]
+
+            if self.bottleneck and cur_in_channels == self.channels[i + c - 1]:
+                block = ResidualBottleneckBlock(
+                    in_out_channels=cur_in_channels,
+                    inner_channels=self.channels[i:i + c],
+                    inner_kernel_sizes=[3] * c,
+                    batchnorm=self.batchnorm,
+                    dropout=self.dropout,
+                    activation_type=self.activation_type,
+                    activation_params=self.activation_params
+                )
+            else:
+                block = ResidualBlock(
+                    in_channels=cur_in_channels,
+                    channels=self.channels[i:i + c],
+                    kernel_sizes=[3] * c,
+                    batchnorm=self.batchnorm,
+                    dropout=self.dropout,
+                    activation_type=self.activation_type,
+                    activation_params=self.activation_params
+                )
+
+            layers.append(block)
+
             if c == self.pool_every:
                 layers += [POOLINGS[self.pooling_type](**self.pooling_params)]
             i += c
